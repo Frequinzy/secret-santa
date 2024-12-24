@@ -29,22 +29,26 @@ HoHoHo!
 
 You're the secret santa for {target}.
 
-You have a budget of: {budget}.
+You have a budget of {budget} to get them something nice!
 
-The end date is: {end_date}.
+You have to be ready by {end_date}, because that's when you'll meet and do the gifting!
 
 Best wishes,
 Saint Nicholas
 """
 
-def input_participants(participants):
+def input_participants(participants, names):
     print("First enter the emails of all the participants. Type 'done' when done.")
     while True:
         nr = len(participants)
-        participant = input(f"Participant nr. {nr}: ")
-        if participant == "done":
+        input_str = input(f"Participant nr. {nr}: ")
+        if input_str == "done":
             break
+        split = input_str.split(" ")
+        participant = split[0]
+        name = split[1]
         participants.append(participant)
+        names[participant] = name
 
 def assign_secret_santas(participants):
     random.shuffle(participants)
@@ -56,8 +60,9 @@ def assign_secret_santas(participants):
 
 def main():
     participants = []
+    names = {}
     while True:
-        input_participants(participants)
+        input_participants(participants, names)
         print("The entered particpants are:")
         for i, p in enumerate(participants):
             print(f"Participant nr. {i} is {p}")
@@ -65,6 +70,7 @@ def main():
         if ans == "n":
             break
         participants = []
+        names = {}
 
     print("Some final questions")
     budget = input("What is the budget for the game? ")
@@ -74,6 +80,7 @@ def main():
 
     if input("Do you want to send emails? y/n ") == "n":
         print(santa_assignment)
+        print(names)
         return
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
@@ -81,7 +88,7 @@ def main():
 
         for recipent in participants:
             body = body_template.format(
-                target=santa_assignment[recipent],
+                target=names[santa_assignment[recipent]],
                 budget=budget,
                 end_date=end_date
             )
